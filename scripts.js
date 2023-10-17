@@ -1,37 +1,117 @@
+//Waits for a target using intervals
+if(typeof waitForElementInterval !== 'function'){  
+  function waitForElementInterval (target, maxAttempts = null, interval = 500){
+    return new Promise((resolve, reject) => {
+      let currentAttempt = 0;
+      let currentInterval = setInterval(function(){
+        try{
+          if(target !== null && target !== undefined){
+            clearInterval(currentInterval);
+            return resolve(target);
+          }else{
+            if(maxAttempts !== null && maxAttempts !== undefined){
+              console.log(`Attempt ${currentAttempt + 1} out of ${maxAttempts}.`);
+              if(currentAttempt >= maxAttempts - 1){
+                clearInterval(currentInterval);
+                return reject('Not found.');
+              }
+              else{
+                currentAttempt++;
+              }
+            }
+          }
+        }catch(error){
+          console.log(error);
+        }
+      }, interval);
+    });
+  }
+}  
+
+//Waits for a target using Mutation Observer
+if(typeof waitForIt !== 'function'){
+  function waitForIt (target){
+      return new Promise((resolve) => {
+          
+          if(target !== null && target !== undefined){
+              console.log(target);
+              return resolve(target);
+          }
+          
+          const observer = new MutationObserver(mutations => {
+              if (target !== null && target !== undefined) {
+                  observer.disconnect();
+                  console.log(target);
+                  resolve(target);
+              }
+          });
+
+          observer.observe(document.body, {
+              childList: true,
+              subtree: true
+          });
+      });
+  }  
+}
+
+//Gets and scrubs data from Credible's Export Tool Web Services so it can be queried in JavaScript
+if(typeof getData !== 'function'){
+  function getData(url) {
+    return new Promise(async (resolve, reject) => {
+      try {
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            return resolve("Could not fetch data.");
+          }
+
+          const xmlString = await response.text();
+      
+          const parser = new DOMParser();
+          const cleanedXmlString = xmlString.replaceAll(/<string\b[^>]*>(?:.*?)|<\/string>|<\/string>|\n/g, '')
+              .replaceAll(/\s+/g, ' ')
+              .replaceAll('&lt;', '<')
+              .replaceAll('&gt;', '>');
+          
+          const xmlResult = parser.parseFromString(cleanedXmlString, "application/xml");
+
+          return resolve(xmlResult);
+      } catch (error) {
+        console.log(error);
+
+        resolve("Could not fetch data.");
+      }
+    });
+  }
+}
+
+//Interpreter stuff
+async function loadInterpreterStatus(target){
+  waitForElementInterval(target, setAttempts, setInt).then(async () => {
+    let clientID = target.value;
+
+    console.log(clientID);
+
+    const url = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0eOR3--y4vF5EEReVqOj5QX&start_date=&end_date=&custom_param1=${clientID}&custom_param2=&custom_param3=`;
+
+    try{
+      let result = await getData(url);
+      let interperterStatus = result.documentElement.querySelector('lookup_desc').innerHTML;
+      console.log(interperterStatus);
+    }catch(error){
+      console.log(error);
+    }
+  }).catch((error) => {
+    console.log(error);
+  });
+}
+
 const HOME = 'HOME';
 const POPOUT = 'POPOUT';
 const NOFRAMES = 'NOFRAMES';
 const setAttempts = 10;
 const setInt = 10;
 let currentState = null;
-
-//Function that checks on interval for an element to load.
-function waitForElementInterval (target, maxAttempts = null, interval = 500){
-  return new Promise((resolve, reject) => {
-    let currentAttempt = 0;
-    let currentInterval = setInterval(function(){
-      try{
-        if(target !== null && target !== undefined){
-          clearInterval(currentInterval);
-          return resolve(target);
-        }else{
-          if(maxAttempts !== null && maxAttempts !== undefined){
-            console.log(`Attempt ${currentAttempt + 1} out of ${maxAttempts}.`);
-            if(currentAttempt >= maxAttempts - 1){
-              clearInterval(currentInterval);
-              return reject('Not found.');
-            }
-            else{
-              currentAttempt++;
-            }
-          }
-        }
-      }catch(error){
-        console.log(error);
-      }
-    }, interval);
-  });
-}
 
 //Upon loading into Credible, checks to see if the user is in one of three states.
 function whereAmI(){
@@ -192,7 +272,7 @@ async function setRecipient(target){
 async function forMain(){
   console.log('Entered forMain.');
   document.querySelector('frame[name=main]').onload = async (event) => {
-    console.log('Main frame\'s load event.');
+    console.log('Main frame\'s load event. I\'m a chunky monkey from funky town.');
     waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]'), setAttempts, setInt).then(() => {
       console.log('Found right after Main\'s load event.');
       document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').onload = async (event) => {
@@ -200,14 +280,6 @@ async function forMain(){
         waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id'), setAttempts, setInt).then(() => {
           console.log('Found recipient.');
           setRecipient(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
-        }).catch((error) => {
-          console.log(error);
-        });
-
-        waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.body.querySelector('#client_id'), setAttempts, setInt).then((target) => {
-          let leftFrame = document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.body;
-          console.log(target.value);
-          console.log(leftFrame.querySelector('visitID').value);
         }).catch((error) => {
           console.log(error);
         });
@@ -220,13 +292,22 @@ async function forMain(){
         console.log(error);
       } 
     });
+
+    //Doing stuff based on client id from left frame
+    waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]'), setAttempts, setInt).then(async () => {
+      console.log('Found left after Main\'s load event.');
+      
+      loadInterpreterStatus(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+    }).catch((error) => {
+      console.log(error);
+    });
   };
 }
 
 //Updates visit status dropdown to display status that match our current scheduling policies. Does not affect the values the system saves when submitted.
 async function setVisitStatus(){
 	await waitForElementInterval(document.querySelector('select[name=dd_status]'));
-	console.log('Found it.')
+	console.log('Found it.');
 	
 	document.querySelector('option[value=\'CANCELLED\']').text = 'Late Cancellation';
   document.querySelector('option[value=\'CNCLD>24hr\']').text = 'Cancellation';
@@ -244,6 +325,8 @@ async function forPopout(){
       console.log(error);
     }
   };
+
+  loadInterpreterStatus(document.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
 }
 
 //This state is specifically for new windows the EHR creates for pages like scheduler entries.
@@ -254,25 +337,4 @@ async function forNoFrames(){
   }catch(error){
     console.log(error);
   } 
-}
-
-//Requiring interperter form
-function checkInterpeterStatus(){
-
-}
-
-//Get JSON
-function getJSON(url, callback){
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
-  xhr.responseType = 'json';
-  xhr.onload = function() {
-    var status = xhr.status;
-    if (status === 200) {
-      callback(null, xhr.response);
-    } else {
-      callback(status, xhr.response);
-    }
-  };
-  xhr.send();
 }

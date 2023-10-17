@@ -11,7 +11,7 @@
     "content_scripts": [
         {
             "matches": ["*://*.crediblebh.com/*"],
-            "js": ["/scripts.js"]
+            "js": ["/credible.js"]
         },
         {
             "matches": ["*://kbbh.atlassian.net/servicedesk/customer/portals"],
