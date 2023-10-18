@@ -96,8 +96,12 @@ async function loadInterpreterStatus(target){
 
     try{
       let result = await getData(url);
-      let interperterStatus = result.documentElement.querySelector('lookup_desc').innerHTML;
+      let interperterStatus = result.documentElement.querySelector('interperter_status').innerHTML;
+      let preferredLanguage = result.documentElement.querySelector('pref_lang').innerHTML;
+      let otherLanguage = result.documentElement.querySelector('other_lang').innerHTML;
       console.log(interperterStatus);
+      console.log(preferredLanguage);
+      console.log(otherLanguage);
     }catch(error){
       console.log(error);
     }
