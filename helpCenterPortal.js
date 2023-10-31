@@ -84,7 +84,7 @@ const getUser = () => {
 
 // Hide Quality Portal for non ops staff
 const qualityHide = () => {
-  const opsStaff = ['Yu Hsu', 'Danice Watters', 'Eli Gahringer', 'Susana Gahringer', 'Kristen Cornachione', 'Katie Huck', 'Kali Dubois', 'Jacob Evans', 'Yegor Berdyugin', 'Ann Omakron Westbrook', 'Brandon Clyde', 'Nathan Johnson', 'Patrick Staffler', 'Samuel Silva', 'Jeán Hubbard', 'Jennifer Hill', 'Stephanie Rookstool', 'Becky Eccles', 'Kristin Hasskamp', 'Tricia King', 'Joseph Ransom', 'Wade Coull', 'JoAnna Moss', 'Brittany Thompson', 'Misty Rose', 'Abbie McClung', 'Bruce Tapley', 'Caroline McNeely', 'Liz Maddalena', 'Help Center Admin'];
+  const opsStaff = ['Yu Hsu', 'Danice Watters', 'Eli Gahringer', 'Susana Gahringer', 'Dylon Yoshinaga', 'Katie Huck', 'Natalie Stenbeck', 'Jacob Evans', 'Yegor Berdyugin', 'Ann Omakron Westbrook', 'Brandon Clyde', 'Nathan Johnson', 'Patrick Staffler', 'Samuel Silva', 'Jeán Hubbard', 'Jennifer Hill', 'Stephanie Rookstool', 'Becky Eccles', 'Kristin Hasskamp', 'Tricia King', 'Joseph Ransom', 'Wade Coull', 'JoAnna Moss', 'Brittany Thompson', 'Misty Rose', 'Abbie McClung', 'Bruce Tapley', 'Caroline McNeely', 'Liz Maddalena', 'Help Center Admin'];
   getUser().then(user => {
     if (!opsStaff.includes(user)){
       document.querySelector('[data-test-id="portal:Quality"]').parentElement.hidden = true;
@@ -102,7 +102,8 @@ const portalHome = () => {
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Compliance.svg",
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/EC.svg",
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Quality.svg",
-    "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Communications.svg"
+    "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Communications.svg",
+    "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/SystemsSupport.svg"
   ];
   let css = "a[data-test-id]{transition: background-color 0.25s ease-out;} a[data-test-id]:hover{background-color: #efefef}";
   
