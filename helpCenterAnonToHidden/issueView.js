@@ -31,6 +31,10 @@ const issueView = () => {
   waitForElement(document, selector).then(requester => {
     anonymousToHidden(requester.querySelector('div').firstChild.firstChild.nextElementSibling);
   });
+  const created = 'div[data-testid="issue-history.ui.history-items.issue-created-history-item.history-item"]';
+  waitForElement(document, created).then(create => {
+    create.remove();
+  });
 };
 
 issueView();
