@@ -96,17 +96,178 @@ async function loadInterpreterStatus(target){
 
     try{
       let result = await getData(url);
-      let interperterStatus = result.documentElement.querySelector('interperter_status').innerHTML;
-      let preferredLanguage = result.documentElement.querySelector('pref_lang').innerHTML;
-      let otherLanguage = result.documentElement.querySelector('other_lang').innerHTML;
-      console.log(interperterStatus);
+      let interpreterStatus;
+      let preferredLanguage;
+      let otherLanguage;
+      let hearingAssistanceNeeded;
+      try{
+        interpreterStatus = result.documentElement.querySelector('interpreter_status').innerHTML;
+      }catch(error){
+        console.log(error);
+        interpreterStatus = null;
+      }
+      try{
+        preferredLanguage = result.documentElement.querySelector('pref_lang').innerHTML;
+      }catch(error){
+        console.log(error);
+        preferredLanguage = null;
+      }
+      try{
+        otherLanguage = result.documentElement.querySelector('other_lang').innerHTML;
+      }catch(error){
+        console.log(error);
+        otherLanguage = null;
+      }
+      try{
+        hearingAssistanceNeeded = result.documentElement.querySelector('hearing_assistance_needed').innerHTML;
+      }catch(error){
+        console.log(error);
+        hearingAssistanceNeeded = null;
+      }
+        
+      console.log(interpreterStatus);
       console.log(preferredLanguage);
       console.log(otherLanguage);
+      console.log(hearingAssistanceNeeded);
+
+      let targetBody = target.closest('body');
+      let targetDocument = targetBody.parentNode.parentNode;
+
+      if(targetDocument.querySelector('#interpreterFlag') === null ){
+        const interpreterFlag = targetDocument.createElement('div');
+
+        interpreterFlag.id = 'interpreterFlag';
+
+        targetDocument.body.appendChild(interpreterFlag);
+      }
+
+      let interpreterFlag = targetDocument.querySelector('#interpreterFlag');
+
+      if(interpreterStatus === 'Foreign Language' || interpreterStatus === 'Hearing Impaired' || hearingAssistanceNeeded.includes('YES')){
+        console.log('Do you understand the words that are coming out of my mouth?');
+        
+        interpreterFlag.value = 'true';
+        
+        if(interpreterFlag.value){
+          [...targetDocument.querySelectorAll('li')].filter((li) => {
+            return li.querySelector('a').innerText === 'Accessibility Service';
+          })[0].classList.add('fail');
+          [...targetDocument.querySelectorAll('li')].filter((li) => {
+            return li.querySelector('a').innerText === 'Accessibility Service';
+          })[0].classList.add('tTip');
+          if(otherLanguage !== ''){
+            [...targetDocument.querySelectorAll('li')].filter((li) => {
+              return li.querySelector('a').innerText === 'Accessibility Service';
+            })[0].setAttribute('tTip', `Interpreter Needed: ${interpreterStatus}<br>Preferred Language: ${otherLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
+          }else{
+            [...targetDocument.querySelectorAll('li')].filter((li) => {
+              return li.querySelector('a').innerText === 'Accessibility Service';
+            })[0].setAttribute('tTip', `Interpreter Needed: ${interpreterStatus}<br>Preferred Language: ${preferredLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
+          }
+  
+          const element = [...targetDocument.querySelectorAll('li')].filter((li) => {
+            return li.querySelector('a').innerText === 'Accessibility Service';
+          })[0];
+  
+          const classChangeDetected = (mutationsList, observer) => {
+              for(const mutation of mutationsList){
+                  if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                      const currentClasses = element.classList;
+                      console.log(`Classes: ${currentClasses}.`);
+                      if(!currentClasses.contains('fail')){
+                          element.classList.add('fail');
+                      }
+                  }
+              }
+          };
+  
+          const observer = new MutationObserver(classChangeDetected);
+  
+          const observerConfig = { attributes: true, attributeFilter: ['class'] };
+  
+          observer.observe(element, observerConfig);
+        }
+  
+        initTTips(targetDocument);
+      }else{
+        console.log('I like to let people talk, who like to talk.');
+        interpreterFlag.value = 'false';
+      }
     }catch(error){
       console.log(error);
     }
   }).catch((error) => {
     console.log(error);
+  });
+}
+
+//A function
+function addTTipRules(targetDocument){
+  const tTipStyles = `
+    .tTip{ 
+      position: relative; 
+      cursor: pointer; 
+    } 
+
+    .tTipText{ 
+      --color: black; 
+      --textColor: white; 
+      position: fixed; 
+      //width: fit-content; 
+      //max-width: 25vw; 
+      text-align: left; 
+      left: 10vw; 
+      top: 20vw; 
+      //transform: translateX(25%); 
+      background-color: var(--color); 
+      color: var(--textColor); 
+      white-space: normal; 
+      padding: 10px 15px; 
+      border-radius: 7px; 
+      visibility: hidden; 
+      opacity: 0; 
+      transition: opacity 0.5s ease; 
+    } 
+  
+    .tTipText::before{ 
+      //content: \'\'; 
+      position: fixed; 
+      left: 10vw;
+      top: 20vw;
+      //transform: translateX(-90%); 
+      border: 7px solid; 
+      border-color: #0000 var(--color) #0000 #0000;
+    } 
+  
+    .tTipText li{ 
+      color: var(--textColor); 
+    } 
+  
+    .tTip:hover .tTipText{ 
+      left: 10vw;
+      top: 20vw;
+      visibility: visible; 
+      opacity: 1; 
+    }
+  `;
+
+  const styleElement = targetDocument.createElement('style');
+  styleElement.textContent = tTipStyles;
+  targetDocument.head.appendChild(styleElement);
+}
+
+function initTTips(targetDocument){
+  const tTips = targetDocument.querySelectorAll('.tTip');
+  
+  tTips.forEach((tTip) => {
+    const tTipContent = tTip.getAttribute('tTip');
+
+    const customTTip = targetDocument.createElement('span');
+    customTTip.classList.add('tTipText');
+    customTTip.innerHTML = tTipContent;
+    if(!tTip.innerHTML.includes(tTipContent)){
+      tTip.appendChild(customTTip);
+    }
   });
 }
 
@@ -277,7 +438,7 @@ async function forMain(){
   console.log('Entered forMain.');
   document.querySelector('frame[name=main]').onload = async (event) => {
     console.log('Main frame\'s load event. I\'m a chunky monkey from funky town.');
-    waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]'), setAttempts, setInt).then(() => {
+    waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument.querySelector('frame[name=right]'), setAttempts, setInt).then(() => {
       console.log('Found right after Main\'s load event.');
       document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').onload = async (event) => {
         console.log('Right frame\'s load event.');
@@ -300,7 +461,7 @@ async function forMain(){
     //Doing stuff based on client id from left frame
     waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]'), setAttempts, setInt).then(async () => {
       console.log('Found left after Main\'s load event.');
-      
+      addTTipRules(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument);
       loadInterpreterStatus(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
     }).catch((error) => {
       console.log(error);
@@ -312,10 +473,13 @@ async function forMain(){
 async function setVisitStatus(){
 	await waitForElementInterval(document.querySelector('select[name=dd_status]'));
 	console.log('Found it.');
-	
-	document.querySelector('option[value=\'CANCELLED\']').text = 'Late Cancellation';
-  document.querySelector('option[value=\'CNCLD>24hr\']').text = 'Cancellation';
-  document.querySelector('option[value=\'NOTPRESENT\']').text = 'School: Absent';
+	try{
+    document.querySelector('option[value=\'CANCELLED\']').text = 'Late Cancellation';
+    document.querySelector('option[value=\'CNCLD>24hr\']').text = 'Cancellation';
+    document.querySelector('option[value=\'NOTPRESENT\']').text = 'School: Absent';
+  }catch(error){
+    console.log(error);
+  }
   console.log('Why are we still here?');
 }
 
@@ -329,7 +493,12 @@ async function forPopout(){
       console.log(error);
     }
   };
-
+  try{
+    addTTipRules(document.querySelector('frame[name=left]').contentDocument);
+  }catch(error){
+    console.log(error);
+  }
+  
   loadInterpreterStatus(document.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
 }
 
