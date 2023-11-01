@@ -27,14 +27,27 @@ const anonymousToHidden = (requester) => {
 
 
 const issueView = () => {
+  // find "Anonymous" reporter and change to "Hidden"
   const selector = "div[data-testid='ref-spotlight-target-reporter-spotlight']"
   waitForElement(document, selector).then(requester => {
     anonymousToHidden(requester.querySelector('div').firstChild.firstChild.nextElementSibling);
   });
+  
+  // Look for Created item and hide it
+  const history = 'button[data-testid="issue-activity-feed.ui.buttons.History"]';
   const created = 'div[data-testid="issue-history.ui.history-items.issue-created-history-item.history-item"]';
+  // Handle History click
+  waitForElement(document, history).then(button => {
+    button.onclick = () => {
+      waitForElement(document, created).then(create => {
+        create.remove();
+      });
+    }
+  });
+  // Handle regular load
   waitForElement(document, created).then(create => {
     create.remove();
   });
 };
 
-issueView();
+document.onload = issueView();
