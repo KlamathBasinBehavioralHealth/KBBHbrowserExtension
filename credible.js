@@ -279,16 +279,19 @@ function nixQualifacts(target){
   let targetColor = undefined;
   let targetBackgroundColor = undefined;
   let table = undefined;
+  let targetBanner = undefined;
   try{
     frame = target.querySelector('frameset').querySelector('frame[name=banner]').contentDocument;
     targetColor = frame.querySelector('div[title=\'Badge Name\']').style.color;
     targetBackgroundColor = frame.querySelector('#banner_badge').style.backgroundColor
     table = frame.querySelector('.header__img').closest('table');
-    frame.querySelector('.header__img').remove();
     table.style.backgroundColor = targetColor;
     table.style.width = '100%';
     frame.querySelector('svg[data-icon=circle-question]').querySelector('path').setAttribute('fill', targetBackgroundColor);
     frame.querySelector('svg[data-icon=arrow-right-from-bracket]').querySelector('path').setAttribute('fill', targetBackgroundColor);
+    targetBanner = frame.querySelector('#partner_logo').src;
+    frame.querySelector('.header__img').src = targetBanner;
+    frame.querySelector('.header__img').remove();
     hideSuccess = true;
   }catch(error){
     console.log(error);
