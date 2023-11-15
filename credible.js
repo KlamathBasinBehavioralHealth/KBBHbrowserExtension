@@ -201,7 +201,7 @@ async function loadInterpreterStatus(target){
   });
 }
 
-//A function
+//Tooltips
 function addTTipRules(targetDocument){
   const tTipStyles = `
     .tTip{ 
@@ -240,6 +240,7 @@ function addTTipRules(targetDocument){
     } 
   
     .tTipText li{ 
+      background-color: var(--color); 
       color: var(--textColor); 
     } 
   
@@ -269,6 +270,29 @@ function initTTips(targetDocument){
       tTip.appendChild(customTTip);
     }
   });
+}
+
+//Update Qualifacts Interface
+function nixQualifacts(target){
+  let hideSuccess = false;
+  let frame = undefined;
+  let targetColor = undefined;
+  let targetBackgroundColor = undefined;
+  let table = undefined;
+  try{
+    frame = target.querySelector('frameset').querySelector('frame[name=banner]').contentDocument;
+    targetColor = frame.querySelector('div[title=\'Badge Name\']').style.color;
+    targetBackgroundColor = frame.querySelector('#banner_badge').style.backgroundColor
+    table = frame.querySelector('.header__img').closest('table');
+    frame.querySelector('.header__img').remove();
+    table.style.backgroundColor = targetColor;
+    table.style.width = '100%';
+    frame.querySelector('svg[data-icon=circle-question]').querySelector('path').setAttribute('fill', targetBackgroundColor);
+    frame.querySelector('svg[data-icon=arrow-right-from-bracket]').querySelector('path').setAttribute('fill', targetBackgroundColor);
+    hideSuccess = true;
+  }catch(error){
+    console.log(error);
+  }
 }
 
 const HOME = 'HOME';
@@ -436,6 +460,7 @@ async function setRecipient(target){
 //This is the normal window the user works in when the EHR loads.
 async function forMain(){
   console.log('Entered forMain.');
+  nixQualifacts(parent.document);
   document.querySelector('frame[name=main]').onload = async (event) => {
     console.log('Main frame\'s load event. I\'m a chunky monkey from funky town.');
     waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument.querySelector('frame[name=right]'), setAttempts, setInt).then(() => {
