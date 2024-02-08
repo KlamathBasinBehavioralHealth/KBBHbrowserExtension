@@ -105,6 +105,8 @@ const portalHome = () => {
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Communications.svg",
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/SystemsSupport.svg",
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Concerns.svg",
+    "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Payroll.svg",
+    "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/HR.svg",
   ];
   let css = "a[data-test-id]{transition: background-color 0.25s ease-out;} a[data-test-id]:hover{background-color: #efefef}";
   
