@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "KBBH Browser Extension",
     "description": "Quality of life improvements to various systems we use at KBBH",
-    "version": "1.6",
+    "version": "1.7",
     "icons": {
         "16": "/images/KBBH Minimal Logo 16.png",
         "48": "/images/KBBH Minimal Logo 48.png",
