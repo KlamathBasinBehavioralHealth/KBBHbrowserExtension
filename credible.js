@@ -287,6 +287,7 @@ function nixQualifacts(target){
     table = frame.querySelector('.header__img').closest('table');
     table.style.backgroundColor = targetColor;
     table.style.width = '100%';
+    table.style.marginLeft = '0px';
     frame.querySelector('svg[data-icon=circle-question]').querySelector('path').setAttribute('fill', targetBackgroundColor);
     frame.querySelector('svg[data-icon=arrow-right-from-bracket]').querySelector('path').setAttribute('fill', targetBackgroundColor);
     targetBanner = frame.querySelector('#partner_logo').src;
@@ -466,13 +467,27 @@ async function forMain(){
   nixQualifacts(parent.document);
   document.querySelector('frame[name=main]').onload = async (event) => {
     console.log('Main frame\'s load event. I\'m a chunky monkey from funky town.');
-    waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument.querySelector('frame[name=right]'), setAttempts, setInt).then(() => {
+    waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]'), setAttempts, setInt).then(() => {
       console.log('Found right after Main\'s load event.');
       document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').onload = async (event) => {
         console.log('Right frame\'s load event.');
-        waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id'), setAttempts, setInt).then(() => {
+        waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#recipient_id'), setAttempts, setInt).then(() => {
           console.log('Found recipient.');
-          setRecipient(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
+          try{
+            setRecipient(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
+          }catch(error){
+            console.log(error);
+          }
+        }).catch((error) => {
+          console.log(error);
+        });
+        waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#supervising_id'), setAttempts, setInt).then(() => {
+          console.log('Found supervising_id.');
+          try{
+            setupAutoOverrideSupervisor(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument);
+          }catch(error){
+            console.log(error);
+          } 
         }).catch((error) => {
           console.log(error);
         });
@@ -484,10 +499,15 @@ async function forMain(){
       }catch(error){
         console.log(error);
       } 
+      try{
+        setupAutoOverrideSupervisor(document.querySelector('frame[name=main]').contentDocument);
+      }catch(error){
+        console.log(error);
+      } 
     });
 
     //Doing stuff based on client id from left frame
-    waitForElementInterval(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]'), setAttempts, setInt).then(async () => {
+    waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=left]'), setAttempts, setInt).then(async () => {
       console.log('Found left after Main\'s load event.');
       addTTipRules(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument);
       loadInterpreterStatus(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
@@ -520,6 +540,11 @@ async function forPopout(){
     }catch(error){
       console.log(error);
     }
+    try{
+      setupAutoOverrideSupervisor(document.querySelector('frame[name=right]').contentDocument);
+    }catch(error){
+      console.log(error);
+    } 
   };
   try{
     addTTipRules(document.querySelector('frame[name=left]').contentDocument);
@@ -538,4 +563,40 @@ async function forNoFrames(){
   }catch(error){
     console.log(error);
   } 
+  try{
+    setupAutoOverrideSupervisor(document);
+  }catch(error){
+    console.log(error);
+  } 
+}
+
+function autoOverrideSupervisor(targetDocument){
+  if(targetDocument.querySelector('#supervising_id').value !== ''){
+    if(!targetDocument.querySelector('input[name=overridewsupervising][value=\'1\']').checked){
+      targetDocument.querySelector('input[name=overridewsupervising][value=\'1\']').checked = true;
+    }
+  }else{
+    if(!targetDocument.querySelector('input[name=overridewsupervising][value=\'0\']').checked){
+      targetDocument.querySelector('input[name=overridewsupervising][value=\'0\']').checked = true;
+    }
+  }
+}
+
+function setupAutoOverrideSupervisor(targetDocument){
+  hideOverrideSupervisor(targetDocument);
+  autoOverrideSupervisor(targetDocument);
+  targetDocument.querySelector('#supervising_id').addEventListener('blur', () => {
+    autoOverrideSupervisor(targetDocument);
+  });
+  targetDocument.querySelector('#supervising_id').addEventListener('change', () => {
+    autoOverrideSupervisor(targetDocument);
+  });
+}
+
+function hideOverrideSupervisor(targetDocument, mode = 'hide'){
+  if(mode === 'hide'){
+    targetDocument.querySelector('[name=overridewsupervising]').closest('tr').hidden = true;
+  }else{
+    targetDocument.querySelector('[name=overridewsupervising]').closest('tr').hidden = false;
+  }
 }
