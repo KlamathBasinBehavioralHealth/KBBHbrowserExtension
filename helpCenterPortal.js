@@ -54,18 +54,19 @@ const hidePortalTitle = () => {
 
 // Set home page card styling
 const createPortalCards = imgList => {
-  document.querySelectorAll("a[data-test-id]").forEach((x,i) => {
-    x.firstChild.style.columnGap = "1.5em";
-    x.firstChild.insertBefore(imgList[i], x.firstChild.firstChild);
-    x.style.width = "20vw";
-    x.style.minWidth = "350px";
-    x.style.height = "12em";
-    x.parentNode.style.margin = " 1em";
+  document.querySelectorAll("div[data-testid='portal-cards-list-item']").forEach((x,i) => {
+    x.firstChild.firstChild.style.columnGap = "1.5em";
+    x.firstChild.firstChild.insertBefore(imgList[i], x.firstChild.firstChild.firstChild);
+    x.firstChild.style.width = "20vw";
+    x.firstChild.style.minWidth = "350px";
+    x.firstChild.style.height = "12em";
+    x.firstChild.style.margin = " 1em";
   });
 }
 
 // Get user displayName
 const getUser = () => {
+  const displayNameRegex = /\"displayName\":\"([^"]+)\"/
   return new Promise((resolve, reject) => {
     const userDiv = document.createElement('div');
     fetch("https://kbbh.atlassian.net/servicedesk/customer/user/profile")
@@ -73,8 +74,12 @@ const getUser = () => {
       .then(data => {
         userDiv.innerHTML = data;
         document.querySelector('footer').appendChild(userDiv);
-        const jsonData = JSON.parse(document.querySelector("#jsonPayload").textContent);
-        resolve(jsonData["user"]["displayName"]);
+        let regexMatch = displayNameRegex.exec(document.querySelector("footer").textContent)
+        if (regexMatch){
+          resolve(regexMatch[1])
+        } else {
+          reject(new Error("Could not find displayName"))
+        }
       })
       .catch(error => {
         reject(error);
@@ -84,7 +89,7 @@ const getUser = () => {
 
 // Hide Quality Portal for non ops staff
 const qualityHide = () => {
-  const opsStaff = ['Yu Hsu', 'Danice Watters', 'Eli Gahringer', 'Susana Gahringer', 'Dylon Yoshinaga', 'Katie Huck', 'Natalie Stenbeck', 'Jacob Evans', 'Yegor Berdyugin', 'Ann Omakron Westbrook', 'Brandon Clyde', 'Nathan Johnson', 'Patrick Staffler', 'Samuel Silva', 'Jeán Hubbard', 'Jennifer Hill', 'Stephanie Rookstool', 'Becky Eccles', 'Kristin Hasskamp', 'Tricia King', 'Joseph Ransom', 'Wade Coull', 'JoAnna Moss', 'Brittany Thompson', 'Misty Rose', 'Abbie McClung', 'Bruce Tapley', 'Caroline McNeely', 'Liz Maddalena', 'Help Center Admin'];
+  const opsStaff = ['Yu Hsu', 'Danice Watters', 'Eli Gahringer', 'Susana Gahringer', 'Dylon Yoshinaga', 'Katie Huck', 'Sam Thach', 'Jacob Evans', 'Ann Omakron Westbrook', 'Brandon Clyde', 'Nathan Johnson', 'Patrick Staffler', 'Brooke Yancey', 'Fernando Barajas Romero', 'Jeán Hubbard', 'Jennifer Hill', 'Jenna Wood', 'Cindy Benesch', 'Becky Eccles', 'Lisa Abney', 'Ali Mweene', 'Barbara Clark', 'Tricia King', 'Joseph Ransom', 'Wade Coull', 'JoAnna Moss', 'Brittany Thompson', 'Misty Rose', 'Abbie McClung', 'Bruce Tapley', 'Caroline McNeely', 'Liz Maddalena', 'Help Center Admin'];
   getUser().then(user => {
     if (!opsStaff.includes(user)){
       document.querySelector('[data-test-id="portal:Quality"]').parentElement.hidden = true;
@@ -107,7 +112,7 @@ const portalHome = () => {
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Concerns.svg",
     "https://raw.githubusercontent.com/KlamathBasinBehavioralHealth/images/main/HelpCenterIcons/Projects/Payroll.svg",
   ];
-  let css = "a[data-test-id]{transition: background-color 0.25s ease-out;} a[data-test-id]:hover{background-color: #efefef}";
+  let css = "div[data-testid='portal-cards-list-item']{transition: background-color 0.25s ease-out;} a[data-test-id]:hover{background-color: #efefef}";
   
   portalContainerStyle();
   hidePortalTitle();
