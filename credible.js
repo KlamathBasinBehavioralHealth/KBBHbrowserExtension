@@ -143,7 +143,7 @@ async function loadInterpreterStatus(target){
 
       let interpreterFlag = targetDocument.querySelector('#interpreterFlag');
 
-      if(interpreterStatus === 'Foreign Language' || interpreterStatus === 'Hearing Impaired' || hearingAssistanceNeeded.includes('YES')){
+      if(interpreterStatus === 'Foreign Language' || hearingAssistanceNeeded.includes('Yes')){
         console.log('Do you understand the words that are coming out of my mouth?');
         
         interpreterFlag.value = 'true';
@@ -155,15 +155,53 @@ async function loadInterpreterStatus(target){
           [...targetDocument.querySelectorAll('li')].filter((li) => {
             return li.querySelector('a').innerText === 'Accessibility Service';
           })[0].classList.add('tTip');
-          if(otherLanguage !== ''){
-            [...targetDocument.querySelectorAll('li')].filter((li) => {
-              return li.querySelector('a').innerText === 'Accessibility Service';
-            })[0].setAttribute('tTip', `Interpreter Needed: ${interpreterStatus}<br>Preferred Language: ${otherLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
-          }else{
-            [...targetDocument.querySelectorAll('li')].filter((li) => {
-              return li.querySelector('a').innerText === 'Accessibility Service';
-            })[0].setAttribute('tTip', `Interpreter Needed: ${interpreterStatus}<br>Preferred Language: ${preferredLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
+
+          let tTipContent = '';
+
+          if(interpreterStatus != null){
+            tTipContent += `Interpreter Needed: ${interpreterStatus}<br>`;
           }
+
+          if(preferredLanguage != null){
+            if(otherLanguage != null){
+              tTipContent += `Preferred Language: ${otherLanguage}<br>`;
+            }else{
+              tTipContent += `Preferred Language: ${preferredLanguage}<br>`;
+            }
+          }
+
+          if(hearingAssistanceNeeded != null){
+            tTipContent += `Hearing Assistance Needed: ${hearingAssistanceNeeded}`;
+          }
+
+          [...targetDocument.querySelectorAll('li')].filter((li) => {
+            return li.querySelector('a').innerText === 'Accessibility Service';
+          })[0].setAttribute('tTip', tTipContent);
+
+          /* if(interpreterStatus !== null){
+            if(otherLanguage !== ''){
+              [...targetDocument.querySelectorAll('li')].filter((li) => {
+                return li.querySelector('a').innerText === 'Accessibility Service';
+              })[0].setAttribute('tTip', `Interpreter Needed: ${interpreterStatus}<br>Preferred Language: ${otherLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
+            }else{
+              [...targetDocument.querySelectorAll('li')].filter((li) => {
+                return li.querySelector('a').innerText === 'Accessibility Service';
+              })[0].setAttribute('tTip', `Interpreter Needed: ${interpreterStatus}<br>Preferred Language: ${preferredLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
+            }
+          }else{
+            if(hearingAssistanceNeeded !== null){
+              if(otherLanguage !== ''){
+                [...targetDocument.querySelectorAll('li')].filter((li) => {
+                  return li.querySelector('a').innerText === 'Accessibility Service';
+                })[0].setAttribute('tTip', `Preferred Language: ${otherLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
+              }else{
+                [...targetDocument.querySelectorAll('li')].filter((li) => {
+                  return li.querySelector('a').innerText === 'Accessibility Service';
+                })[0].setAttribute('tTip', `Preferred Language: ${preferredLanguage}<br>Hearing Assistance Needed: ${hearingAssistanceNeeded}`);
+              }
+            }
+          } */
+          
   
           const element = [...targetDocument.querySelectorAll('li')].filter((li) => {
             return li.querySelector('a').innerText === 'Accessibility Service';
@@ -201,75 +239,219 @@ async function loadInterpreterStatus(target){
   });
 }
 
-//Tooltips
-function addTTipRules(targetDocument){
-  const tTipStyles = `
-    .tTip{ 
-      position: relative; 
-      cursor: pointer; 
-    } 
+//Require Accessibility Service
+const accessibilityInterval = 1000;
+async function requireAccessiblityService(target){
+  console.log('Entering require accessiblity service function.');
+  waitForElementInterval(target, setAttempts, setInt).then(async () => {
+    console.log('Target exists.');
+    let clientID = target.value;
+    let tempVisitID = target.closest('td').querySelector('#visittemp_ids').value;
+    let accessiblityError = document.createElement('div');
+    let accessiblityErrorContent = document.createTextNode('Please complete Accessibility Service subform.');
+    accessiblityError.setAttribute('id', 'accessiblityErrorDiv');
+    accessiblityError.style.color = 'red';
+    accessiblityError.style.fontWeight = 'bold';
+    accessiblityError.appendChild(accessiblityErrorContent);
 
-    .tTipText{ 
-      --color: black; 
-      --textColor: white; 
-      position: fixed; 
-      //width: fit-content; 
-      //max-width: 25vw; 
-      text-align: left; 
-      left: 10vw; 
-      top: 20vw; 
-      //transform: translateX(25%); 
-      background-color: var(--color); 
-      color: var(--textColor); 
-      white-space: normal; 
-      padding: 10px 15px; 
-      border-radius: 7px; 
-      visibility: hidden; 
-      opacity: 0; 
-      transition: opacity 0.5s ease; 
-    } 
-  
-    .tTipText::before{ 
-      //content: \'\'; 
-      position: fixed; 
-      left: 10vw;
-      top: 20vw;
-      //transform: translateX(-90%); 
-      border: 7px solid; 
-      border-color: #0000 var(--color) #0000 #0000;
-    } 
-  
-    .tTipText li{ 
-      background-color: var(--color); 
-      color: var(--textColor); 
-    } 
-  
-    .tTip:hover .tTipText{ 
-      left: 10vw;
-      top: 20vw;
-      visibility: visible; 
-      opacity: 1; 
-    }
-  `;
+    const url = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0eOR3--y4vF5EEReVqOj5QX&start_date=&end_date=&custom_param1=${clientID}&custom_param2=&custom_param3=`;
 
-  const styleElement = targetDocument.createElement('style');
-  styleElement.textContent = tTipStyles;
-  targetDocument.head.appendChild(styleElement);
-}
+    const url2 = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0cQSjspyfSCqbt1!JCvw4X7&start_date=&end_date=&custom_param1=${tempVisitID}&custom_param2=&custom_param3=`;
 
-function initTTips(targetDocument){
-  const tTips = targetDocument.querySelectorAll('.tTip');
-  
-  tTips.forEach((tTip) => {
-    const tTipContent = tTip.getAttribute('tTip');
+    const url3 = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0dyvlMAjcYRIifY0hysQEhP&start_date=&end_date=&custom_param1=${tempVisitID}&custom_param2=&custom_param3=`;
 
-    const customTTip = targetDocument.createElement('span');
-    customTTip.classList.add('tTipText');
-    customTTip.innerHTML = tTipContent;
-    if(!tTip.innerHTML.includes(tTipContent)){
-      tTip.appendChild(customTTip);
+    try{
+      let result = await getData(url);
+      let interpreterStatus;
+      let preferredLanguage;
+      let otherLanguage;
+      let hearingAssistanceNeeded;
+      try{
+        interpreterStatus = result.documentElement.querySelector('interpreter_status').innerHTML;
+      }catch(error){
+        console.log(error);
+        interpreterStatus = null;
+      }
+      try{
+        preferredLanguage = result.documentElement.querySelector('pref_lang').innerHTML;
+      }catch(error){
+        console.log(error);
+        preferredLanguage = null;
+      }
+      try{
+        otherLanguage = result.documentElement.querySelector('other_lang').innerHTML;
+      }catch(error){
+        console.log(error);
+        otherLanguage = null;
+      }
+      try{
+        hearingAssistanceNeeded = result.documentElement.querySelector('hearing_assistance_needed').innerHTML;
+      }catch(error){
+        console.log(error);
+        hearingAssistanceNeeded = null;
+      }
+        
+      console.log(interpreterStatus);
+      console.log(preferredLanguage);
+      console.log(otherLanguage);
+      console.log(hearingAssistanceNeeded);
+
+      //Check if Service has Accessiblity Service Form
+      try{
+        let checkForMLA = await getData(url2);
+
+        if(checkForMLA.documentElement.querySelector('name')){
+          if(interpreterStatus === 'Foreign Language' || hearingAssistanceNeeded.includes('Yes')){
+            console.log('Need to check for accessbility service.');
+            let check = await getData(url3);
+            if(!check.documentElement.querySelector('question_id')){
+              console.log('Accessbility service missing.');
+              if(window.top.document.querySelector('frame[name=main]')){
+                console.log('We in main.');
+                if(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]')){
+                  console.log('We are on the sign and submit page');
+                  try{
+                    if(!window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
+                      window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = true;
+                      window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').closest('tr').nextElementSibling.querySelector('td').append(accessiblityError);
+                    }
+                  }catch(error){
+                    console.log(error);
+                  }
+                }
+              }else if(window.top.document.querySelector('frame[name=right]')){
+                console.log('We in right.');
+                if(window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]')){
+                  console.log('We are on the sign and submit page');
+                  try{
+                    if(!window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
+                      window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = true;
+                      window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').closest('tr').nextElementSibling.querySelector('td').append(accessiblityError);
+                    }
+                  }catch(error){
+                    console.log(error);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }catch(error){
+        console.log(error);
+      }
+    }catch(error){
+      console.log(error);
     }
   });
+}
+
+//Tooltips
+function addTTipRules(targetDocument){   
+  const tTipStyles = `   
+    .tTip{       
+      position: relative;      
+      cursor: pointer;       
+      zIndex: 99;     
+    }      
+    
+    .tTipText{       
+      --color: black;        
+      --textColor: white;        
+      position: absolute;       
+      width: fit-content;        
+      max-width: 100vw;       
+      text-align: center;       
+      left: 50%;       
+      top: 0;       
+      transform: translateX(25%);       
+      background-color: var(--color);       
+      color: var(--textColor);       
+      white-space: normal;       
+      padding: 10px 15px;       
+      border-radius: 7px;       
+      visibility: hidden;       
+      opacity: 0;       
+      transition: opacity 0.5s ease;     
+    }      
+    
+    .tTipText::before{       
+      content: \'\';       
+      position: absolute;       
+      left: 0%;       
+      transform: translateX(-100%);       
+      border: 7.5px solid;       
+      border-color: #0000 var(--color) #0000 #0000;     
+    }      
+    
+    .tTipText li{       
+      color: var(--textColor);      
+    }      
+    
+    .tTip:hover .tTipText{       
+      left: 50%;       
+      visibility: visible;       
+      opacity: 1;     
+    }`
+  ;    
+  
+  const styleElement = targetDocument.createElement('style');   
+  styleElement.textContent = tTipStyles;   
+  targetDocument.head.appendChild(styleElement); 
+}  
+
+function initTTips(targetDocument){   
+  const tTips = targetDocument.querySelectorAll('.tTip');      
+  tTips.forEach((tTip) => {     
+    const tTipContent = tTip.getAttribute('tTip');     
+    let clonedTTip;       
+    const customTTip = targetDocument.createElement('div');      
+    try{       
+      if(tTipContent.startsWith('#')){           
+        console.log(document.querySelector(`${tTipContent}`));           
+        clonedTTip = document.querySelector(`${tTipContent}`).cloneNode(true);           
+        clonedTTip.removeAttribute('id');           
+        clonedTTip.removeAttribute('class');           
+        clonedTTip.classList.add('tTipText');           
+        clonedTTip.style.zIndex = '99';           
+        tTip.appendChild(clonedTTip);       
+      }else{           
+        customTTip.innerHTML = tTipContent;           
+        if(!tTip.innerHTML.includes(tTipContent)){               
+          customTTip.classList.add('tTipText');               
+          tTip.appendChild(customTTip);           
+        }       
+      }     
+    }catch(error){       
+      console.log(error);       
+      customTTip.innerHTML = tTipContent;       
+      if(!tTip.innerHTML.includes(tTipContent)){           
+        customTTip.classList.add('tTipText');           
+        tTip.appendChild(customTTip);       
+      }     
+    }   
+  });    
+  
+  document.querySelectorAll('.externalTTip').forEach((tTip) => {       
+    tTip.closest('table').closest('tr').style.display = 'none';       
+    tTip.closest('table').closest('tr').nextSibling.style.display = 'none';   
+  }); 
+}  
+
+document.addEventListener('DOMContentLoaded', () => {  
+  console.log('tTips load event.');   
+  addTTipRules(document);   
+  initTTips(document); });  
+
+function highlightTTip(mode = 'highlight', color = 'lightblue'){   
+  if(mode === 'highlight'){     
+    [...document.querySelectorAll('.tTip')].forEach((tTip) => {       
+      tTip.style.backgroundColor = color;     
+    });   
+  }else if(mode === 'clear'){     
+    [...document.querySelectorAll('.tTip')].forEach((tTip) => {       
+      tTip.style.backgroundColor = '';     
+    });   
+  } 
 }
 
 //Update Qualifacts Interface
@@ -280,6 +462,7 @@ function nixQualifacts(target){
   let targetBackgroundColor = undefined;
   let table = undefined;
   let targetBanner = undefined;
+  let serverInfo = undefined;
   try{
     frame = target.querySelector('frameset').querySelector('frame[name=banner]').contentDocument;
     targetColor = frame.querySelector('div[title=\'Badge Name\']').style.color;
@@ -291,9 +474,12 @@ function nixQualifacts(target){
     frame.querySelector('svg[data-icon=circle-question]').querySelector('path').setAttribute('fill', targetBackgroundColor);
     frame.querySelector('svg[data-icon=arrow-right-from-bracket]').querySelector('path').setAttribute('fill', targetBackgroundColor);
     targetBanner = frame.querySelector('#partner_logo').src;
+    serverInfo = frame.querySelector('.header__img').title;
     frame.querySelector('.header__img').src = targetBanner;
     frame.querySelector('.header__img').remove();
+    //frame.querySelector('.header__img').style.opacity = '0';
     hideSuccess = true;
+    frame.querySelector('#partner_logo').title = serverInfo;
   }catch(error){
     console.log(error);
   }
@@ -492,6 +678,16 @@ async function forMain(){
           console.log(error);
         });
       };
+      waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#signAndSubmitButton'), setATtempts, setInt).then(() => {
+        console.log('Found Sign and Submit Button.');
+        try{
+          
+        }catch(error){
+          console.log(error);
+        }
+      }).catch((error) => {
+        console.log(error);
+      });
     }).catch((error) => {
       console.log(error);
       try{
@@ -511,6 +707,16 @@ async function forMain(){
       console.log('Found left after Main\'s load event.');
       addTTipRules(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument);
       loadInterpreterStatus(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+      let accessibilityCheckInterval = setInterval(() => {
+        try{
+          if(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
+            clearInterval(accessibilityCheckInterval);
+          }
+          requireAccessiblityService(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+        }catch(error){
+          console.log(error);
+        }
+      }, accessibilityInterval);
     }).catch((error) => {
       console.log(error);
     });
@@ -553,6 +759,17 @@ async function forPopout(){
   }
   
   loadInterpreterStatus(document.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+  //await waitForElementInterval(document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]')); 
+  let accessibilityCheckInterval = setInterval(() => {
+    try{
+      if(document.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
+        clearInterval(accessibilityCheckInterval);
+      }
+      requireAccessiblityService(document.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+    }catch(error){
+      console.log(error);
+    }
+  }, accessibilityInterval);
 }
 
 //This state is specifically for new windows the EHR creates for pages like scheduler entries.
@@ -594,9 +811,11 @@ function setupAutoOverrideSupervisor(targetDocument){
 }
 
 function hideOverrideSupervisor(targetDocument, mode = 'hide'){
-  if(mode === 'hide'){
-    targetDocument.querySelector('[name=overridewsupervising]').closest('tr').hidden = true;
-  }else{
-    targetDocument.querySelector('[name=overridewsupervising]').closest('tr').hidden = false;
+  if(targetDocument.querySelector('#signAndSubmitButton')){
+    if(mode === 'hide'){
+      targetDocument.querySelector('[name=overridewsupervising]').closest('tr').hidden = true;
+    }else{
+      targetDocument.querySelector('[name=overridewsupervising]').closest('tr').hidden = false;
+    }
   }
 }
