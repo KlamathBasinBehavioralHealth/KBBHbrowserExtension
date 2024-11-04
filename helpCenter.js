@@ -19,7 +19,7 @@ async function waitForElement(context, selector) {
 }
 
 const hideCreate = () => {
-  waitForElement(document, 'div[data-testid="create-button-wrapper"]').then(create => create.remove());
+  waitForElement(document, 'button[id="createGlobalItem"]').then(create => create.remove());
 };
 
 let currentUrl = location.href;

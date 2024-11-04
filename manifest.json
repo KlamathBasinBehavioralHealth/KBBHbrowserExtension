@@ -30,7 +30,7 @@
             "js": ["/helpCenterAnonToHidden/requestList.js"]
         },
         {
-            "matches": ["*://kbbh.atlassian.net/browse/*", "*://kbbh.atlassian.net/jira/servicedesk/projects/CON/queues/*/*/*"],
+            "matches": ["*://kbbh.atlassian.net/browse/CON-*", "*://kbbh.atlassian.net/jira/servicedesk/projects/CON/queues/*/*/*"],
             "js": ["/helpCenterAnonToHidden/issueView.js"]
         }
     ]
