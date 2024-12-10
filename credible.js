@@ -163,7 +163,7 @@ async function loadInterpreterStatus(target){
           }
 
           if(preferredLanguage != null || preferredLanguage !== 'English'){
-            if(otherLanguage != null){
+            if(otherLanguage != null && preferredLanguage === 'Other'){
               tTipContent += `Preferred Language: ${otherLanguage}<br>`;
             }else{
               tTipContent += `Preferred Language: ${preferredLanguage}<br>`;
