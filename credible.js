@@ -143,12 +143,12 @@ async function loadInterpreterStatus(target){
 
       let interpreterFlag = targetDocument.querySelector('#interpreterFlag');
 
-      if(interpreterStatus === 'Foreign Language' || preferredLanguage !== 'English' || hearingAssistanceNeeded.includes('Yes')){
+      if(interpreterStatus === 'Foreign Language' || (preferredLanguage !== 'English' && preferredLanguage !== null) || hearingAssistanceNeeded.includes('Yes')){
         console.log('Do you understand the words that are coming out of my mouth?');
         
         interpreterFlag.value = 'true';
         
-        if(interpreterFlag.value || preferredLanguage !== 'English'){
+        if(interpreterFlag.value || (preferredLanguage !== 'English' && preferredLanguage !== null)){
           [...targetDocument.querySelectorAll('li')].filter((li) => {
             return li.querySelector('a').innerText === 'Accessibility Service';
           })[0].classList.add('fail');
@@ -162,7 +162,7 @@ async function loadInterpreterStatus(target){
             tTipContent += `Interpreter Needed: ${interpreterStatus}<br>`;
           }
 
-          if(preferredLanguage != null){
+          if(preferredLanguage != null || preferredLanguage !== 'English'){
             if(otherLanguage != null){
               tTipContent += `Preferred Language: ${otherLanguage}<br>`;
             }else{
@@ -301,7 +301,7 @@ async function requireAccessiblityService(target){
         let checkForMLA = await getData(url2);
 
         if(checkForMLA.documentElement.querySelector('name')){
-          if(interpreterStatus === 'Foreign Language' || preferredLanguage !== 'English' || hearingAssistanceNeeded.includes('Yes')){
+          if(interpreterStatus === 'Foreign Language' || (preferredLanguage !== 'English' && preferredLanguage !== null) || hearingAssistanceNeeded.includes('Yes')){
             console.log('Need to check for accessbility service.');
             let check = await getData(url3);
             if(!check.documentElement.querySelector('question_id')){
