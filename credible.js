@@ -148,7 +148,7 @@ async function loadInterpreterStatus(target){
         
         interpreterFlag.value = 'true';
         
-        if(interpreterFlag.value){
+        if(interpreterFlag.value || preferredLanguage !== 'English'){
           [...targetDocument.querySelectorAll('li')].filter((li) => {
             return li.querySelector('a').innerText === 'Accessibility Service';
           })[0].classList.add('fail');
@@ -301,7 +301,7 @@ async function requireAccessiblityService(target){
         let checkForMLA = await getData(url2);
 
         if(checkForMLA.documentElement.querySelector('name')){
-          if(interpreterStatus === 'Foreign Language' || hearingAssistanceNeeded.includes('Yes')){
+          if(interpreterStatus === 'Foreign Language' || preferredLanguage !== 'English' || hearingAssistanceNeeded.includes('Yes')){
             console.log('Need to check for accessbility service.');
             let check = await getData(url3);
             if(!check.documentElement.querySelector('question_id')){
