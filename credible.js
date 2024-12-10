@@ -143,7 +143,7 @@ async function loadInterpreterStatus(target){
 
       let interpreterFlag = targetDocument.querySelector('#interpreterFlag');
 
-      if(interpreterStatus === 'Foreign Language' || hearingAssistanceNeeded.includes('Yes')){
+      if(interpreterStatus === 'Foreign Language' || preferredLanguage !== 'English' || hearingAssistanceNeeded.includes('Yes')){
         console.log('Do you understand the words that are coming out of my mouth?');
         
         interpreterFlag.value = 'true';
@@ -667,21 +667,22 @@ async function forMain(){
         }).catch((error) => {
           console.log(error);
         });
-        waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#supervising_id'), setAttempts, setInt).then(() => {
-          console.log('Found supervising_id.');
-          try{
-            setupAutoOverrideSupervisor(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument);
-          }catch(error){
-            console.log(error);
-          } 
-        }).catch((error) => {
-          console.log(error);
-        });
       };
-      waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#signAndSubmitButton'), setATtempts, setInt).then(() => {
+      waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#signAndSubmitButton'), setAttempts, setInt).then(() => {
         console.log('Found Sign and Submit Button.');
         try{
-          
+          waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#supervising_id'), setAttempts, setInt).then(() => {
+            console.log('Found supervising_id.');
+            try{
+              setupAutoOverrideSupervisor(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument);
+
+              //Check for Intern
+            }catch(error){
+              console.log(error);
+            } 
+          }).catch((error) => {
+            console.log(error);
+          });
         }catch(error){
           console.log(error);
         }
