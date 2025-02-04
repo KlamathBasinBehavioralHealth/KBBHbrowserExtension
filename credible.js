@@ -1,5 +1,5 @@
 const subformCheckInterval = 1000;
-const peerSupportServiceId = 'Peer Support Service';
+const peerSupportService = 'Peer Support Service';
 
 //Waits for a target using intervals
 if(typeof waitForElementInterval !== 'function'){  
@@ -660,12 +660,6 @@ async function setRecipient(target){
   }
 }
 
-//Check Intern Status
-async function checkIntern(){
-
-
-}
-
 //This is the normal window the user works in when the EHR loads.
 async function forMain(){
   let requireAccessbility = false;
@@ -675,7 +669,7 @@ async function forMain(){
     console.log('Main frame\'s load event. I\'m a chunky monkey from funky town.');
     waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]'), setAttempts, setInt).then(async () => {
       console.log('Found right after Main\'s load event.');
-      document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').onload = async (event) => {
+      window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').onload = async (event) => {
         console.log('Right frame\'s load event.');
         try{
           [...document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelectorAll('a')].filter((element) => {
@@ -688,7 +682,7 @@ async function forMain(){
         waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#recipient_id'), setAttempts, setInt).then(async () => {
           console.log('Found recipient.');
           try{
-            setRecipient(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
+            setRecipient(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
           }catch(error){
             console.log(error);
           }
@@ -696,200 +690,78 @@ async function forMain(){
           console.log(error);
         });
     
-      waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#signAndSubmitButton'), setAttempts, setInt).then(async () => {
-        console.log('Found Sign and Submit Button.');
-
-        loadInterpreterStatus(document.querySelector('frame[name=main]')?.contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
-        
-        let accessibilityCheckInterval = setInterval(() => {
-          try{
-            if(document.querySelector('frame[name=main]')?.contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
-              clearInterval(accessibilityCheckInterval);
+        waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#signAndSubmitButton'), setAttempts, setInt).then(async () => {
+          console.log('Found Sign and Submit Button.');
+          console.log('Test 9000');
+      
+          let accessibilityCheckInterval = setInterval(() => {
+            try{
+              if(window.top.document.querySelector('frame[name=main]')?.contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
+                clearInterval(accessibilityCheckInterval);
+              }
+              requireAccessbility = requireAccessiblityService(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+            }catch(error){
+              console.log(error);
             }
-            requireAccessbility = requireAccessiblityService(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
-          }catch(error){
-            console.log(error);
-          }
-        }, accessibilityInterval);
+          }, accessibilityInterval);
 
-        try{
-          waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument?.querySelector('#supervising_id'), setAttempts, setInt).then(async () => {
-            console.log('Found supervising_id.');
-            try{
-              setupAutoOverrideSupervisor(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument);
-            }catch(error){
-              console.log(error);
-            } 
+          
+            
 
-            try{
-              //Check for Intern
-              console.log('Checking for intern status.');
-
-              let internError = document.createElement('div');
-              let internErrorContent = document.createTextNode('Please select supervisor.');
-              internError.setAttribute('id', 'internError');
-              internError.style.color = 'red';
-              internError.style.fontWeight = 'bold';
-              internError.appendChild(internErrorContent);
-
-              let targetDocument = document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]')?.contentDocument;
-              let tempVisitID = targetDocument.querySelector('body').querySelector('#visittemp_id').value;
-
-              let internUrl = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0c2Yz!VEp0!eZrPdAAIgsal&start_date=&end_date=&custom_param1=${tempVisitID}&custom_param2=&custom_param3=`;
-
-              let internData = await getData(internUrl);
-
-              //Check if service is peer support service
-              let serviceTypeURL = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0eaKmY5yrn8bybVnZc2VMjJ&start_date=&end_date=&custom_param1=${tempVisitID}&custom_param2=&custom_param3=`;
-              let serviceTypeData = await getData(serviceTypeURL);
-              let serviceType = serviceTypeData.documentElement.querySelector('visittype').innerHTML;
-
-              window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#supervising_id').closest('tr').hidden = false;
-              if(serviceType === peerSupportServiceId){
-                window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#supervising_id').closest('tr').hidden = true;
+              try{
+                setupAutoOverrideSupervisor(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument);
+          
+                checkIntern(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument);
+              }catch(error){
+                console.log(error);
               }
-
-              if(!window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
-                window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = false;
-              }
-
-              if(internData.documentElement.querySelector('is_intern')){
-                if(internData.documentElement.querySelector('is_intern').innerHTML === '1' && serviceType !== peerSupportServiceId){
-
-                  console.log('Require supervisor dropdown.');
-                  try{
-                    if(!window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#internErrorDiv')){
-                      window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = true;
-                      window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').closest('tr').nextElementSibling.querySelector('td').append(internError);
-
-                      window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#supervising_id').addEventListener('change', () => {
-                      console.log('Sups');
-
-                      try{
-                        window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#internError').remove();
-                      }catch(error){
-                          console.log(error);
-                      }
                   
-                      if(!window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
-                        window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = false;
-                      }
-                    });
-                    }
-                  }catch(error){
-                    console.log(error);
-                  }
-                }
-                console.log(internData.documentElement.querySelector('is_intern'));
-              }
-            }catch(error){
-              console.log(error);
-            }      
-          }).catch((error) => {
-            console.log(error);
-          });
-        }catch(error){
-          console.log(error);
-        }
         }).catch((error) => {
           console.log(error);
-        });
+        });         
       };
     }).catch((error) => {
       console.log(error);
       try{
-        [...document.querySelector('frame[name=main]').contentDocument.querySelectorAll('a')].filter((element) => {
+        [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelectorAll('a')].filter((element) => {
           return element.innerText.includes('Credible Plan');
         })[0].closest('tr').remove();
       }catch(error){
         console.log(error);
       }
       try{
-        setRecipient(document.querySelector('frame[name=main]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
+        setRecipient(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
       }catch(error){
         console.log(error);
       } 
       try{
-        setupAutoOverrideSupervisor(document.querySelector('frame[name=main]').contentDocument);
+        setupAutoOverrideSupervisor(window.top.document.querySelector('frame[name=main]').contentDocument);
+
+        checkIntern(window.top.document.querySelector('frame[name=main]').contentDocument);
       }catch(error){
         console.log(error);
       } 
     });
 
     //Doing stuff based on client id from left frame
-    waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=left]'), setAttempts, setInt).then(async () => {
+    waitForElementInterval(window.top.document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=left]'), setAttempts, setInt).then(async () => {
       console.log('Found left after Main\'s load event.');
-      addTTipRules(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument);
-      loadInterpreterStatus(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+      addTTipRules(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument);
+      loadInterpreterStatus(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+      
       let accessibilityCheckInterval = setInterval(() => {
         try{
-          if(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
+          if(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
             clearInterval(accessibilityCheckInterval);
           }
-          requireAccessbility = requireAccessiblityService(document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
+          requireAccessbility = requireAccessiblityService(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelector('#client_id'));
         }catch(error){
           console.log(error);
         }
       }, accessibilityInterval);
 
       //Aggregate subforms
-      try{
-        if([...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('a')].filter((element) => {
-          return element.innerText.includes('Subforms');
-        })){
-          console.log('Subforms found.');    
-    
-          window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.addEventListener('onload', () => {
-            try{
-              if([...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('a')].filter((element) => {
-                return element.innerText.includes('Subforms');
-              })){
-                console.log('Subforms found.');    
-          
-                [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-                  return element.innerHTML.includes('Subforms');
-                }).at(-1).hidden = false;
-          
-                if(
-                  [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('h1')].filter((element) => {
-                    return element.innerText.includes('START');
-                  })
-                ){
-                  [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-                    return element.innerHTML.includes('Subforms');
-                  }).at(-1).hidden = true;
-          
-                  [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('li')].filter((element) => {
-                    return element.innerHTML.includes('Subforms');
-                  }).at(-1).hidden = true;
-                }
-              }
-            }catch(error){
-              console.log(error);
-            }
-          });
-    
-          [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-            return element.innerHTML.includes('Subforms');
-          }).at(-1).hidden = false;
-    
-          if(
-            [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('h1')].filter((element) => {
-              return element.innerText.includes('START');
-            })
-          ){
-            [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-              return element.innerHTML.includes('Subforms');
-            }).at(-1).hidden = true;
-    
-            [...window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('li')].filter((element) => {
-              return element.innerHTML.includes('Subforms');
-            }).at(-1).hidden = true;
-          }
-        }
-      }catch(error){
-        console.log(error);
-      }
+      aggregateSubforms(window.top.document.querySelector('frame[name=main]').contentDocument);
     }).catch((error) => {
       console.log(error);
     });
@@ -925,95 +797,38 @@ async function forPopout(){
     }catch(error){
       console.log(error);
     }
-  }, accessibilityInterval);
+  }, accessibilityInterval);  
 
-  document.querySelector('frame[name=right]').onload = async () => {
-    console.log('Popout\'s right frame load event.');
-    try{
-      [...document.querySelector('frame[name=right]').contentDocument.querySelectorAll('a')].filter((element) => {
-        return element.innerText.includes('Credible Plan');
-      })[0].closest('tr').remove();
-    }catch(error){
-      console.log(error);
-    }
-
-    try{
-      setRecipient(document.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
-    }catch(error){
-      console.log(error);
-    }
-    try{
-      setupAutoOverrideSupervisor(document.querySelector('frame[name=right]').contentDocument);
-
+  waitForElementInterval(window.top.document.querySelector('frame[name=right]'), setAttempts, setInt).then(async () => {
+    console.log('Found right frame in popout.');
+    
+    window.top.document.querySelector('frame[name=right]').onload = async () => {
+      console.log('Popout\'s right frame load event.');
       try{
-        //Check for Intern
-        console.log('Checking for intern status.');
-
-        let internError = document.createElement('div');
-        let internErrorContent = document.createTextNode('Please select supervisor.');
-        internError.setAttribute('id', 'internError');
-        internError.style.color = 'red';
-        internError.style.fontWeight = 'bold';
-        internError.appendChild(internErrorContent);
-
-        let targetDocument = document.querySelector('frame[name=right]')?.contentDocument;
-        let tempVisitID = targetDocument.querySelector('body').querySelector('#visittemp_id').value;
-
-        let internUrl = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0c2Yz!VEp0!eZrPdAAIgsal&start_date=&end_date=&custom_param1=${tempVisitID}&custom_param2=&custom_param3=`;
-
-        let internData = await getData(internUrl);
-
-        if(!window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
-          window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = false;
-        }
-
-        //Check if service is peer support service
-        let serviceTypeURL = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0eaKmY5yrn8bybVnZc2VMjJ&start_date=&end_date=&custom_param1=${tempVisitID}&custom_param2=&custom_param3=`;
-        let serviceTypeData = await getData(serviceTypeURL);
-        let serviceType = serviceTypeData.documentElement.querySelector('visittype').innerHTML;
-
-        window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#supervising_id').closest('tr').hidden = false;
-        if(serviceType === peerSupportServiceId){
-          window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#supervising_id').closest('tr').hidden = true;
-        }
-
-
-        if(internData.documentElement.querySelector('is_intern')){
-          if(internData.documentElement.querySelector('is_intern').innerHTML === '1' && serviceType !== peerSupportServiceId){
-
-            console.log('Require supervisor dropdown.');
-            try{
-              if(!window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#internErrorDiv')){
-                window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = true;
-                window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').closest('tr').nextElementSibling.querySelector('td').append(internError);
-
-                window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#supervising_id').addEventListener('change', () => {
-                console.log('Sups');
-
-                try{
-                  window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#internError').remove();
-                }catch(error){
-                    console.log(error);
-                }
-            
-                if(!window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#accessiblityErrorDiv')){
-                  window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('input[name=signAndSubmitButton]').disabled = false;
-                }
-              });
-              }
-            }catch(error){
-              console.log(error);
-            }
-          }
-          console.log(internData.documentElement.querySelector('is_intern'));
-        }
+        [...window.top.document.querySelector('frame[name=right]').contentDocument.querySelectorAll('a')].filter((element) => {
+          return element.innerText.includes('Credible Plan');
+        })[0].closest('tr').remove();
       }catch(error){
         console.log(error);
       }
-    }catch(error){
-      console.log(error);
-    } 
-  };
+  
+      try{
+        setRecipient(window.top.document.querySelector('frame[name=right]').contentDocument.querySelector('#recipient_id').querySelectorAll('option'));
+      }catch(error){
+        console.log(error);
+      }
+
+      try{
+        setupAutoOverrideSupervisor(window.top.document.querySelector('frame[name=right]').contentDocument);
+  
+        checkIntern(window.top.document.querySelector('frame[name=right]').contentDocument);
+      }catch(error){
+        console.log(error);
+      }
+    };
+  }).catch((error) => {
+    console.log(error);
+  });
 
   try{
     addTTipRules(document.querySelector('frame[name=left]').contentDocument);
@@ -1022,63 +837,7 @@ async function forPopout(){
   }
 
   //Aggregate subforms
-  try{
-    if([...window.top.document.querySelector('frame[name=left]').contentDocument.querySelectorAll('a')].filter((element) => {
-      return element.innerText.includes('Subforms');
-    })){
-      console.log('Subforms found.');    
-
-      window.top.document.querySelector('frame[name=right]').contentDocument.addEventListener('onload', () => {
-        try{
-          if([...window.top.document.querySelector('frame[name=left]').contentDocument.querySelectorAll('a')].filter((element) => {
-            return element.innerText.includes('Subforms');
-          })){
-            console.log('Subforms found.');    
-      
-            [...window.top.document.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-              return element.innerHTML.includes('Subforms');
-            }).at(-1).hidden = false;
-      
-            if(
-              [...window.top.document.querySelector('frame[name=right]').contentDocument.querySelectorAll('h1')].filter((element) => {
-                return element.innerText.includes('START');
-              })
-            ){
-              [...window.top.document.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-                return element.innerHTML.includes('Subforms');
-              }).at(-1).hidden = true;
-      
-              [...window.top.document.querySelector('frame[name=right]').contentDocument.querySelectorAll('li')].filter((element) => {
-                return element.innerHTML.includes('Subforms');
-              }).at(-1).hidden = true;
-            }
-          }
-        }catch(error){
-          console.log(error);
-        }
-      });
-
-      [...window.top.document.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-        return element.innerHTML.includes('Subforms');
-      }).at(-1).hidden = false;
-
-      if(
-        [...window.top.document.querySelector('frame[name=right]').contentDocument.querySelectorAll('h1')].filter((element) => {
-          return element.innerText.includes('START');
-        })
-      ){
-        [...window.top.document.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
-          return element.innerHTML.includes('Subforms');
-        }).at(-1).hidden = true;
-
-        [...window.top.document.querySelector('frame[name=right]').contentDocument.querySelectorAll('li')].filter((element) => {
-          return element.innerHTML.includes('Subforms');
-        }).at(-1).hidden = true;
-      }
-    }
-  }catch(error){
-    console.log(error);
-  }
+  aggregateSubforms(window.top.document);
 }
 
 //This state is specifically for new windows the EHR creates for pages like scheduler entries.
@@ -1101,6 +860,87 @@ async function forNoFrames(){
   }catch(error){
     console.log(error);
   } 
+}
+
+function aggregateSubforms(targetDocument){
+  let notInFormBuilder = true;
+  try{
+    if([...window.top.document.querySelector('frame[name=main]').contentDocument.querySelectorAll('title')].filter((title) => {
+      return title.innerText = 'Form Builder';
+  })[0]){
+      notInFormBuilder = false
+    }
+  }catch(error){
+
+  }
+  try{
+    if([...window.top.document.querySelector('frame[name=right]').contentDocument.querySelectorAll('title')].filter((title) => {
+      return title.innerText = 'Form Builder';
+  })[0]){
+      notInFormBuilder = false
+    }
+  }catch(error){
+
+  }
+  if(notInFormBuilder){
+    try{
+      if([...targetDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('a')].filter((element) => {
+        return element.innerText.includes('Subforms');
+      })){
+        console.log('Subforms found.');    
+
+        targetDocument.querySelector('frame[name=right]').contentDocument.addEventListener('onload', () => {
+          try{
+            if([...targetDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('a')].filter((element) => {
+              return element.innerText.includes('Subforms');
+            })){
+              console.log('Subforms found.');    
+        
+              [...targetDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
+                return element.innerHTML.includes('Subforms');
+              }).at(-1).hidden = false;
+        
+              if(
+                [...targetDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('h1')].filter((element) => {
+                  return element.innerText.includes('START');
+                })
+              ){
+                [...targetDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
+                  return element.innerHTML.includes('Subforms');
+                }).at(-1).hidden = true;
+        
+                [...targetDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('li')].filter((element) => {
+                  return element.innerHTML.includes('Subforms');
+                }).at(-1).hidden = true;
+              }
+            }
+          }catch(error){
+            console.log(error);
+          }
+        });
+
+        [...targetDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
+          return element.innerHTML.includes('Subforms');
+        }).at(-1).hidden = false;
+
+        if(
+          [...targetDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('h1')].filter((element) => {
+            return element.innerText.includes('START');
+          })
+        ){
+          [...targetDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('li')].filter((element) => {
+            return element.innerHTML.includes('Subforms');
+          }).at(-1).hidden = true;
+
+          [...targetDocument.querySelector('frame[name=right]').contentDocument.querySelectorAll('li')].filter((element) => {
+            return element.innerHTML.includes('Subforms');
+          }).at(-1).hidden = true;
+        }
+      }
+    }catch(error){
+      console.log(error);
+    }
+  }
 }
 
 function autoOverrideSupervisor(targetDocument){
@@ -1133,5 +973,73 @@ function hideOverrideSupervisor(targetDocument, mode = 'hide'){
     }else{
       targetDocument.querySelector('[name=overridewsupervising]').closest('tr').hidden = false;
     }
+  }
+}
+
+//Check Intern Status
+async function checkIntern(targetDocument){
+  try{
+    console.log('Checking for intern status.');
+
+    let internError = targetDocument.createElement('div');
+    let internErrorContent = targetDocument.createTextNode('Please select supervisor.');
+    internError.setAttribute('id', 'internError');
+    internError.style.color = 'red';
+    internError.style.fontWeight = 'bold';
+    internError.appendChild(internErrorContent);
+
+
+    let tempVisitID = targetDocument.querySelector('body').querySelector('#visittemp_id').value;
+
+    let internUrl = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0c2Yz!VEp0!eZrPdAAIgsal&start_date=&end_date=&custom_param1=${tempVisitID}&custom_param2=&custom_param3=`;
+
+    let internData = await getData(internUrl);
+
+    if(!targetDocument.querySelector('#accessiblityErrorDiv')){
+      targetDocument.querySelector('input[name=signAndSubmitButton]').disabled = false;
+    }
+
+    targetDocument.querySelector('#supervising_id').closest('tr').hidden = false;
+    if([...[...targetDocument.querySelectorAll('tr')].filter((element) => {
+      return element.innerHTML.includes('Service Type:');
+  }).at(-1).querySelectorAll('td')].at(-1).innerText === peerSupportService){
+      targetDocument.querySelector('#supervising_id').closest('tr').hidden = true;
+    }
+
+    if(internData.documentElement.querySelector('is_intern')){
+      if(internData.documentElement.querySelector('is_intern').innerHTML === '1' && [...[...targetDocument.querySelectorAll('tr')].filter((element) => {
+      return element.innerHTML.includes('Service Type:');
+  }).at(-1).querySelectorAll('td')].at(-1).innerText !== peerSupportService){
+
+        console.log('Require supervisor dropdown.');
+        try{
+          if(!targetDocument.querySelector('#internErrorDiv')){
+            targetDocument.querySelector('input[name=signAndSubmitButton]').disabled = true;
+            if(!targetDocument.querySelector('#internError')){
+              targetDocument.querySelector('input[name=signAndSubmitButton]').closest('tr').nextElementSibling.querySelector('td').append(internError);
+            }
+
+            targetDocument.querySelector('#supervising_id').addEventListener('change', () => {
+            console.log('Sups');
+
+            try{
+              targetDocument.querySelector('#internError').remove();
+            }catch(error){
+                console.log(error);
+            }
+        
+            if(!targetDocument.querySelector('#accessiblityErrorDiv')){
+              targetDocument.querySelector('input[name=signAndSubmitButton]').disabled = false;
+            }
+          });
+          }
+        }catch(error){
+          console.log(error);
+        }
+      }
+      console.log(internData.documentElement.querySelector('is_intern'));
+    }
+  }catch(error){
+    console.log(error);
   }
 }
