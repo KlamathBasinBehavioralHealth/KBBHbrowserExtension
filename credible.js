@@ -667,6 +667,9 @@ async function forMain(){
   nixQualifacts(parent.document);
   document.querySelector('frame[name=main]').onload = async (event) => {
     console.log('Main frame\'s load event. I\'m a chunky monkey from funky town.');
+
+    findPlannerEntries();
+
     waitForElementInterval(document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=right]'), setAttempts, setInt).then(async () => {
       console.log('Found right after Main\'s load event.');
       window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').onload = async (event) => {
@@ -705,17 +708,23 @@ async function forMain(){
             }
           }, accessibilityInterval);
 
-          
-            
-
-              try{
-                setupAutoOverrideSupervisor(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument);
-          
-                checkIntern(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument);
-              }catch(error){
-                console.log(error);
-              }
+          try{
+            setupAutoOverrideSupervisor(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument);
+      
+            checkIntern(window.top.document.querySelector('frame[name=main]').contentDocument.querySelector('frame[name=right]').contentDocument);
+          }catch(error){
+            console.log(error);
+          }
                   
+          /*try{
+            if(document.querySelectorAll('[class*="planner"]')){
+              highlightAdminTime();
+              highlightBreakTime();
+              redXNotes();
+            }
+          }catch(error){
+            console.log(error);
+          }*/
         }).catch((error) => {
           console.log(error);
         });         
@@ -825,6 +834,15 @@ async function forPopout(){
       }catch(error){
         console.log(error);
       }
+      try{
+        if(document.querySelectorAll('[class*="planner"]')){
+          highlightAdminTime();
+          highlightBreakTime();
+          redXNotes();
+        }
+      }catch(error){
+        console.log(error);
+      }
     };
   }).catch((error) => {
     console.log(error);
@@ -863,26 +881,22 @@ async function forNoFrames(){
 }
 
 function aggregateSubforms(targetDocument){
-  let notInFormBuilder = true;
+  let inFormBuilder = true;
   try{
-    if([...window.top.document.querySelector('frame[name=main]').contentDocument.querySelectorAll('title')].filter((title) => {
-      return title.innerText = 'Form Builder';
-  })[0]){
-      notInFormBuilder = false
+    if(window.top.document.querySelector('frame[name=main]')?.contentDocument?.querySelector('frame[name=left]')?.contentDocument?.querySelector('#visitId')){
+      inFormBuilder = false;
     }
   }catch(error){
 
   }
   try{
-    if([...window.top.document.querySelector('frame[name=right]').contentDocument.querySelectorAll('title')].filter((title) => {
-      return title.innerText = 'Form Builder';
-  })[0]){
-      notInFormBuilder = false
+    if(window.top.document.querySelector('frame[name=left]')?.contentDocument?.querySelector('#visitId')){
+      inFormBuilder = false;
     }
   }catch(error){
 
   }
-  if(notInFormBuilder){
+  if(!inFormBuilder){
     try{
       if([...targetDocument.querySelector('frame[name=left]').contentDocument.querySelectorAll('a')].filter((element) => {
         return element.innerText.includes('Subforms');
@@ -1042,4 +1056,193 @@ async function checkIntern(targetDocument){
   }catch(error){
     console.log(error);
   }
+}
+
+let adminTimeColor = '#ADD8E6';
+let breakTimeColor = '#CCCCFF';
+let characterLimit = 15;
+
+function highlightAdminTime(){
+  let targetDocument = undefined;
+
+  try{
+    targetDocument = window.top.document.querySelector('frame[name=main]').contentDocument;
+  }catch(error){
+    console.log(error);
+    targetDocument = document;
+  }
+
+  if(targetDocument){
+    [...targetDocument.querySelectorAll('[data-tooltip]')].filter((element) => {
+      return element.tagName === 'A';
+    }).forEach((element) => {
+      if(element.parentElement.innerHTML.includes('AdminTime') || element.parentElement.innerHTML.includes('Admin Time')){
+        element.style.backgroundColor = adminTimeColor;
+        element.parentElement.style.backgroundColor = adminTimeColor;
+        
+        [...element.parentElement.querySelectorAll('span')].forEach((spanElement) => {
+          spanElement.style.backgroundColor = adminTimeColor;
+        });
+        
+        let plannerNotes = element.getAttribute('data-tooltip').split('<br />').slice(2);
+        plannerNotes = String(plannerNotes);
+        plannerNotes = plannerNotes.replace('\n', '');
+        plannerNotes = plannerNotes.substring(0, characterLimit);
+        if(plannerNotes != ''){
+          element.closest('a').innerText = `Admin Time: ${plannerNotes}`;
+          console.log(element.closest('a').innerText);
+          console.log(element.offsetWidth);
+          element.closest('table').closest('td').offsetWidth = element.offsetWidth;
+        }else{
+          element.closest('a').innerText = `Admin Time\n`;
+        }
+      }
+    });
+  }
+}
+
+function highlightBreakTime(){
+  let targetDocument = undefined;
+
+  try{
+    targetDocument = window.top.document.querySelector('frame[name=main]').contentDocument;
+  }catch(error){
+    console.log(error);
+    targetDocument = document;
+  }
+
+  if(targetDocument){
+    [...targetDocument.querySelectorAll('[data-tooltip]')].filter((element) => {
+      return element.tagName === 'A';
+    }).forEach((element) => {
+      if(element.parentElement.innerHTML.includes('Break')){
+        element.style.backgroundColor = breakTimeColor;
+        element.parentElement.style.backgroundColor = breakTimeColor;
+        
+        [...element.parentElement.querySelectorAll('span')].forEach((spanElement) => {
+          spanElement.style.backgroundColor = breakTimeColor;
+        });
+        
+        let plannerNotes = element.getAttribute('data-tooltip').split('<br />').slice(2);
+        plannerNotes = String(plannerNotes);
+        plannerNotes = plannerNotes.replace('\n', '');
+        plannerNotes = plannerNotes.substring(0, characterLimit);
+        if(plannerNotes != ''){
+          element.closest('a').innerText = `Break: ${plannerNotes}\n`;
+          console.log(element.closest('a').innerText);
+          console.log(element.offsetWidth);
+          element.closest('table').closest('td').offsetWidth = element.offsetWidth;
+        }else{
+          element.closest('a').innerText = `Break\n`;
+        }
+        try{
+          element.closest('a').previousElementSibling.remove();
+        }catch(error){
+          console.log(error);
+        }
+        try{
+          element.closest('a').nextElementSibling.remove();
+        }catch(error){
+          console.log(error);
+        }
+      }
+    });
+  }
+}
+
+async function redXNotes(){
+  let targetDocument = undefined;
+
+  try{
+    targetDocument = window.top.document.querySelector('frame[name=main]').contentDocument;
+  }catch(error){
+    console.log(error);
+    targetDocument = document;
+  }
+
+  if(targetDocument){
+    [...targetDocument.querySelectorAll('a[data-tooltip][href*="clientvisit_id"]')].forEach(async (element) => {
+      let visitID = element.getAttribute('href').split('=').at(-1);
+      console.log(visitID);
+      
+      let url = `https://cors-everywhere.azurewebsites.net/reportservices.crediblebh.com/reports/ExportService.asmx/ExportXML?connection=LYEC1uwvr-7RAoxbT4TJDuiO!gY1p8-aFVdERsxbI0dfYdVj0cBvmYxNxmjhOgZ0&start_date=&end_date=&custom_param1=${visitID}&custom_param2=&custom_param3=`;
+      
+      let results = await getData(url);
+      
+      let redXNote = undefined;
+      
+      try{
+        redXNote = results.documentElement.querySelector('manual_redx_note').innerHTML;
+      }catch(error){
+        console.log(error);
+      }
+      
+      const limit = element.getBoundingClientRect().height;
+      const redXSvg = `
+        <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+          <title>Red X Emoji</title>
+          <defs>
+            <image  width="32" height="32" id="img1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAAAXNSR0IB2cksfwAAAANQTFRF////p8QbyAAAAA9JREFUeJxjZAACxsFLAAAK8AAhCVrP+AAAAABJRU5ErkJggg=="/>
+            <image  width="32" height="32" id="img2" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgAQMAAABJtOi3AAAAAXNSR0IB2cksfwAAAAZQTFRF/wAA////QR00EQAAAHlJREFUeJxjZAACxooOBjnGmhYGO8a6JoY6xvpGhn+M9o6NvxnlFzp/ZeS/qP6Skf2l/EVG5q/qCxkZfzs7MjL8a2xkZKivZ2JksN/Lwsggf5ODkYH/oQCUAHPBEmAlIMVgbWADwEaBDQUbD7YIbCXYcrAzwA4COQ0ASw4t2W4jYzQAAAAASUVORK5CYII="/>
+          </defs>
+          <style>
+          </style>
+          <use id="Background" href="#img1" x="0" y="0"/>
+          <use id="Layer 1" href="#img2" x="0" y="0"/>
+        </svg>
+      `;
+      const redXSvgEncoded = encodeURIComponent(redXSvg)
+        .replace(/'/g, "%27")
+        .replace(/"/g, "%22");
+      const redXImgURL = `data:image/svg+xml,${redXSvgEncoded}`;
+    
+      const redXImg = `<img src="${redXImgURL}" alt="Red X" style="vertical-align: middle; height: 1.07em;">`;
+
+      if(redXNote){
+        console.log(results.documentElement.querySelector('manual_redx_note').innerHTML);
+        element.setAttribute('data-tooltip', element.getAttribute('data-tooltip') + redXNote + '<br />');
+        element.innerHTML += ` ${redXImg} ${redXNote.substring(0, characterLimit)}`;
+        console.log(redXImg);
+        element.closest('table').closest('td').offsetWidth = element.offsetWidth;
+        console.log(element.innerHTML);
+        console.log(element.getAttribute('data-tooltip'));
+      }else{
+        console.log('Service does not have red X.');
+      }
+    });
+  }
+}
+
+window.addEventListener('load', async() => {
+  /*try{
+    if(window.top.document.querySelector('frame[name=main]')){
+      window.top.document.querySelector('frame[name=main]').contentDocument.addEventListener('load', () => {
+        console.log('Main load event for planner check.');
+        findPlannerEntries();
+      });
+    }
+  }catch(error){
+    console.log(error);
+  }*/
+  
+  findPlannerEntries();
+});
+
+async function findPlannerEntries(){
+  let targetDocument = undefined;
+
+  try{
+    targetDocument = window.top.document.querySelector('frame[name=main]').contentDocument;
+  }catch(error){
+    console.log(error);
+    targetDocument = document;
+  }
+  waitForElementInterval(targetDocument.querySelector('.planner-section-loader'), setAttempts, setInt).then(async () => {
+    console.log('Found Schedule page.');
+    highlightAdminTime();
+    highlightBreakTime();
+    redXNotes();
+  }).catch((error) => {
+    console.log(error);
+  });
 }

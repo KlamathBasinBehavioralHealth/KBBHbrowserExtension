@@ -1,39 +1,47 @@
 {
-    "manifest_version": 3,
-    "name": "KBBH Browser Extension",
-    "description": "Quality of life improvements to various systems we use at KBBH",
-    "version": "1.20",
-    "icons": {
-        "16": "/images/KBBH Minimal Logo 16.png",
-        "48": "/images/KBBH Minimal Logo 48.png",
-        "128": "/images/KBBH Minimal Logo 128.png"
+  "manifest_version": 3,
+  "name": "KBBH Browser Extension",
+  "description": "Quality of life improvements to various systems we use at KBBH",
+  "version": "1.21",
+  "icons": {
+    "16": "images/KBBH Minimal Logo 16.png",
+    "48": "images/KBBH Minimal Logo 48.png",
+    "128": "images/KBBH Minimal Logo 128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.crediblebh.com/*"],
+      "js": ["credible.js"]
     },
-    "content_scripts": [
-        {
-            "matches": ["*://*.crediblebh.com/*"],
-            "js": ["/credible.js"]
-        },
-        {
-            "matches": ["*://kbbh.atlassian.net/servicedesk/customer/portals"],
-            "js": ["/helpCenterPortal.js"]
-        },
-        {
-            "matches": ["*://kbbh.atlassian.net/jira*", "*://kbbh.atlassian.net/browse/*"],
-            "js": ["/helpCenter.js"]
-        },
-        {
-            "matches": ["*://kbbh.atlassian.net/servicedesk/customer/portal/*/*"],
-            "js": ["/helpCenterAnonToHidden/requestDetail.js"]
-        },
-        {
-            "matches": ["*://kbbh.atlassian.net/servicedesk/customer/user/requests*"],
-            "js": ["/helpCenterAnonToHidden/requestList.js"]
-        },
-        {
-            "matches": ["*://kbbh.atlassian.net/browse/CON-*", "*://kbbh.atlassian.net/jira/servicedesk/projects/CON/queues/*/*/*"],
-            "js": ["/helpCenterAnonToHidden/issueView.js"]
-        }
-    ]
+    {
+      "matches": ["*://kbbh.atlassian.net/servicedesk/customer/portals"],
+      "js": ["helpCenterPortal.js"]
+    },
+    {
+      "matches": ["*://kbbh.atlassian.net/jira*", "*://kbbh.atlassian.net/browse/*"],
+      "js": ["helpCenter.js"]
+    },
+    {
+      "matches": ["*://kbbh.atlassian.net/servicedesk/customer/portal/*/*"],
+      "js": ["helpCenterAnonToHidden/requestDetail.js"]
+    },
+    {
+      "matches": ["*://kbbh.atlassian.net/servicedesk/customer/user/requests*"],
+      "js": ["helpCenterAnonToHidden/requestList.js"]
+    },
+    {
+      "matches": ["*://kbbh.atlassian.net/browse/CON-*", "*://kbbh.atlassian.net/jira/servicedesk/projects/CON/queues/*/*/*"],
+      "js": ["helpCenterAnonToHidden/issueView.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/Red X Emoji.svg"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "host_permissions": [
+    "*://*.crediblebh.com/*",
+    "*://kbbh.atlassian.net/*"
+  ]
 }
-
-
